@@ -40,7 +40,7 @@ async function run() {
     res.send({ token });
   });
 
-  // ---------- DOCTORS ----------
+  
   app.get("/doctors", async (req, res) => {
     const { search = "", sort = "" } = req.query;
     const query = search ? { name: { $regex: search, $options: "i" } } : {};
