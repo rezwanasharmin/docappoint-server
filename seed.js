@@ -48,7 +48,7 @@ const doctors = [
     experience: "15 years",
     availability: ["09:00 AM - 11:00 AM", "05:00 PM - 08:00 PM"],
     description: "Specialized in bone, joint, and spine surgery.",
-    hospital: "Apollo Hospital",
+    hospital: "Mirpur Hospital",
     location: "Bashundhara, Dhaka",
     fee: 1500,
     rating: 4.7,
