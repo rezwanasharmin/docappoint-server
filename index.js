@@ -14,7 +14,7 @@ const client = new MongoClient(process.env.MONGODB_URI, {
   serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true },
 });
 
-// JWT middleware (custom token issued by /jwt below; Better Auth handles its own sessions on the client)
+
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).send({ message: "Unauthorized" });
