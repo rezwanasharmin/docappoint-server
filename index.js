@@ -33,9 +33,9 @@ async function run() {
   const appointmentsCol = db.collection("appointments");
   const reviewsCol = db.collection("reviews");
 
-  // ---------- JWT ----------
+  
   app.post("/jwt", (req, res) => {
-    const user = req.body; // { email }
+    const user = req.body; // 
     const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "7d" });
     res.send({ token });
   });
