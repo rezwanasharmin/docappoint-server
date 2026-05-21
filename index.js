@@ -61,7 +61,7 @@ async function run() {
     res.send(doc);
   });
 
-  // ---------- APPOINTMENTS ----------
+
   app.post("/appointments", verifyJWT, async (req, res) => {
     const result = await appointmentsCol.insertOne({ ...req.body, createdAt: new Date() });
     res.send(result);
