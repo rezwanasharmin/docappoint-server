@@ -98,7 +98,7 @@ async function run() {
   });
 
   app.post("/reviews", verifyJWT, async (req, res) => {
-    // Optional: only allow if the user has an appointment with this doctor
+    
     const result = await reviewsCol.insertOne({ ...req.body, createdAt: new Date() });
     res.send(result);
   });
