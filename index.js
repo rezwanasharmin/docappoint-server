@@ -91,7 +91,7 @@ async function run() {
     res.send(result);
   });
 
-  // ---------- REVIEWS ----------
+  
   app.get("/reviews/:doctorId", async (req, res) => {
     const list = await reviewsCol.find({ doctorId: req.params.doctorId }).sort({ createdAt: -1 }).toArray();
     res.send(list);
