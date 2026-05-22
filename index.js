@@ -1,39 +1,37 @@
 const express = require("express");
 const cors = require("cors");
+
 const { MongoClient, ObjectId, ServerApiVersion } = require("mongodb");
 const jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://docappoint-client-swart.vercel.app"
-    ],
-    credentials: true,
-  })
-);
+app.use(cors());
+
 app.use(express.json());
 
 const client = new MongoClient(process.env.MONGODB_URI, {
-  serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true },
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
 });
 
-
-const verifyJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  console.log("Auth Header:", authHeader); // Debug log
-  if (!authHeader) return res.status(401).send({ message: "Unauthorized" });
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).send({ message: "Unauthorized" });
-    req.decoded = decoded;
-    next();
-  });
-};
+// const verifyJWT = (req, res, next) => {
+//   const authHeader = req.headers.authorization;
+//   console.log("Auth Header:", authHeader); // Debug log
+//   if (!authHeader) return res.status(401).send({ message: "Unauthorized" });
+//   const token = authHeader.split(" ")[1];
+//   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+//     if (err) return res.status(401).send({ message: "Unauthorized" });
+//     req.decoded = decoded;
+//     next();
+//   });
+// };
 
 async function run() {
   // await client.connect();
@@ -42,14 +40,29 @@ async function run() {
   const appointmentsCol = db.collection("appointments");
   const reviewsCol = db.collection("reviews");
 
-  
   app.post("/jwt", (req, res) => {
-    const user = req.body; // 
+    const user = req.body; //
     const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "7d" });
     res.send({ token });
   });
 
-  
+  app.post("/book/appointment", async (req, res) => {
+    console.log(req.body);
+
+    const result = await appointmentsCol.insertOne({
+      ...req.body,
+      createdAt: new Date(),
+    });
+    res.send(result);
+  });
+  app.get("/appointment/my-booking", async (req, res) => {
+    const { email } = req.query;
+    console.log({ email });
+
+    const mine = await appointmentsCol.find({ userEmail: email }).toArray();
+    res.send(mine);
+  });
+  //	mdsafayet315@gmail.com
   app.get("/doctors", async (req, res) => {
     const { search = "", sort = "" } = req.query;
     const query = search ? { name: { $regex: search, $options: "i" } } : {};
@@ -70,45 +83,38 @@ async function run() {
     res.send(doc);
   });
 
-
-  app.post("/appointments", verifyJWT, async (req, res) => {
-    const result = await appointmentsCol.insertOne({ ...req.body, createdAt: new Date() });
-    res.send(result);
-  });
-
-  app.get("/appointments", verifyJWT, async (req, res) => {
-    const { email } = req.query;
-    if (email !== req.decoded.email) return res.status(403).send({ message: "Forbidden" });
-    const mine = await appointmentsCol.find({ userEmail: email }).toArray();
-    res.send(mine);
-  });
-
-  app.patch("/appointments/:id", verifyJWT, async (req, res) => {
-    const { patientName, gender, phone, appointmentDate, appointmentTime } = req.body;
+  app.patch("/appointments/:id", async (req, res) => {
+    const { patientName, gender, phone, appointmentDate, appointmentTime } =
+      req.body;
     const result = await appointmentsCol.updateOne(
-      { _id: new ObjectId(req.params.id), userEmail: req.decoded.email },
-      { $set: { patientName, gender, phone, appointmentDate, appointmentTime } }
+      { _id: new ObjectId(req.params.id)},
+      {
+        $set: { patientName, gender, phone, appointmentDate, appointmentTime },
+      },
     );
     res.send(result);
   });
 
-  app.delete("/appointments/:id", verifyJWT, async (req, res) => {
+  app.delete("/appointments/:id", async (req, res) => {
     const result = await appointmentsCol.deleteOne({
       _id: new ObjectId(req.params.id),
-      userEmail: req.decoded.email,
     });
     res.send(result);
   });
 
-  
   app.get("/reviews/:doctorId", async (req, res) => {
-    const list = await reviewsCol.find({ doctorId: req.params.doctorId }).sort({ createdAt: -1 }).toArray();
+    const list = await reviewsCol
+      .find({ doctorId: req.params.doctorId })
+      .sort({ createdAt: -1 })
+      .toArray();
     res.send(list);
   });
 
-  app.post("/reviews", verifyJWT, async (req, res) => {
-    
-    const result = await reviewsCol.insertOne({ ...req.body, createdAt: new Date() });
+  app.post("/reviews", async (req, res) => {
+    const result = await reviewsCol.insertOne({
+      ...req.body,
+      createdAt: new Date(),
+    });
     res.send(result);
   });
 
@@ -117,4 +123,3 @@ async function run() {
   app.listen(port, () => console.log(`Server on ${port}`));
 }
 run().catch(console.dir);
-
