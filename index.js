@@ -7,7 +7,15 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors({ origin: [process.env.CLIENT_ORIGIN, "https://your-client.vercel.app"], credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://docappoint-client-swart.vercel.app"
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const client = new MongoClient(process.env.MONGODB_URI, {
@@ -17,6 +25,7 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  console.log("Auth Header:", authHeader); // Debug log
   if (!authHeader) return res.status(401).send({ message: "Unauthorized" });
   const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
